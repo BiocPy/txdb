@@ -1,5 +1,5 @@
 [![PyPI-Server](https://img.shields.io/pypi/v/txdb.svg)](https://pypi.org/project/txdb/)
-![Unit tests](https://github.com/YOUR_ORG_OR_USERNAME/txdb/actions/workflows/run-tests.yml/badge.svg)
+![Unit tests](https://github.com/BiocPy/txdb/actions/workflows/run-tests.yml/badge.svg)
 
 # TxDb
 
