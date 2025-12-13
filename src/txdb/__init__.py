@@ -14,3 +14,9 @@ except PackageNotFoundError:  # pragma: no cover
     __version__ = "unknown"
 finally:
     del version, PackageNotFoundError
+
+from .record import TxDbRecord
+from .txdb import TxDb
+from .txdbregistry import TxDbRegistry
+
+__all__ = ["TxDb", "TxDbRegistry", "TxDbRecord"]

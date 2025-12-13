@@ -1,18 +1,14 @@
 # txdb
 
-Access TxDB annotations
+This package provides a Python interface to access and manipulate genome annotations, implemented in the Bioconductor [GenomicFeatures](https://bioconductor.org/packages/GenomicFeatures) package. It allows users to interact with `TxDb` SQLite databases to extract genomic features such as transcripts, exons, CDS, and promoters as `GenomicRanges` objects. It also includes a registry system to easily download and cache standard TxDb databases.
 
+## Install
 
-## Note
+To get started, install the package from [PyPI](https://pypi.org/project/txdb/)
 
-> This is the main page of your project's [Sphinx] documentation. It is
-> formatted in [Markdown]. Add additional pages by creating md-files in
-> `docs` or rst-files (formatted in [reStructuredText]) and adding links to
-> them in the `Contents` section below.
->
-> Please check [Sphinx] and [MyST] for more information
-> about how to document your project and how to configure your preferences.
-
+```bash
+pip install txdb
+```
 
 ## Contents
 
