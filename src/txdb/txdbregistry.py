@@ -102,9 +102,7 @@ class TxDbRegistry:
             download=True,
         )
 
-        print(resource)
         path = self._resource_path(resource)
-        print(path)
         if path is None:
             raise RuntimeError(f"Could not resolve local path for resource {key!r}")
 

@@ -8,7 +8,6 @@ __license__ = "MIT"
 
 
 def test_real_txdb_workflow(tmp_path):
-    print("tmp path in tests", tmp_path)
     registry = TxDbRegistry(cache_dir=tmp_path / "cache")
     txdb_id = "TxDb.Celegans.UCSC.ce11.ensGene.sqlite"
 
