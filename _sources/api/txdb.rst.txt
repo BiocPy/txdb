@@ -1,0 +1,37 @@
+txdb package
+============
+
+Submodules
+----------
+
+txdb.record module
+------------------
+
+.. automodule:: txdb.record
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+txdb.txdb module
+----------------
+
+.. automodule:: txdb.txdb
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+txdb.txdbregistry module
+------------------------
+
+.. automodule:: txdb.txdbregistry
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Module contents
+---------------
+
+.. automodule:: txdb
+   :members:
+   :show-inheritance:
+   :undoc-members:
