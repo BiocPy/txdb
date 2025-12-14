@@ -3,7 +3,7 @@
 
 # TxDb
 
-This package provides a Python interface to access and manipulate genome annotations, implemented in the Bioconductor [GenomicFeatures](https://bioconductor.org/packages/GenomicFeatures) package. It allows users to interact with `TxDb` SQLite databases to extract genomic features such as transcripts, exons, CDS, and promoters as `GenomicRanges` objects. It also includes a registry system to easily download and cache standard TxDb databases.
+This package provides a Python interface to access and manipulate genome annotations, implemented in the Bioconductor [GenomicFeatures](https://bioconductor.org/packages/GenomicFeatures) package. It allows users to interact with `TxDb` SQLite databases to extract genomic features such as transcripts, exons, CDS, and promoters as [GenomicRanges](https://github.com/biocpy/genomicranges) objects. It also includes a registry system to easily download and cache standard TxDb annotation files.
 
 ## Install
 
@@ -17,7 +17,7 @@ pip install txdb
 
 ### Using TxDbRegistry
 
-The TxDbRegistry provides easy access to hosted TxDb databases in AnnotationHub.
+The TxDbRegistry provides easy access to hosted TxDb databases in [AnnotationHub](https://bioconductor.org/packages/release/bioc/html/AnnotationHub.html).
 
 ```python
 from txdb import TxDbRegistry
@@ -30,7 +30,7 @@ print(registry.list_txdb())
 
 # Load a specific database (downloads and caches it automatically)
 # Example: hg38 knownGene
-txdb = registry.load_db("TxDb.Hsapiens.UCSC.hg38.knownGene.sqlite")
+txdb = registry.load_db("TxDb.Hsapiens.UCSC.hg38.knownGene")
 
 # Access features
 transcripts = txdb.transcripts()

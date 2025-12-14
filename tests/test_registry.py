@@ -38,7 +38,7 @@ def registry(tmp_path):
 
 def test_registry_init(registry):
     assert isinstance(registry, TxDbRegistry)
-    assert "TxDb.Mmusculus.UCSC.mm10.knownGene.sqlite" in registry.list_txdb()
+    assert "TxDb.Mmusculus.UCSC.mm10.knownGene" in registry.list_txdb()
 
 
 # @patch("txdb.txdbregistry.BiocFileCache")
@@ -55,7 +55,7 @@ def test_registry_init(registry):
 #     registry._bfc = mock_bfc
 
 #     # Test load_db
-#     txdb = registry.load_db("TxDb.Mmusculus.UCSC.mm10.knownGene.sqlite")
+#     txdb = registry.load_db("TxDb.Mmusculus.UCSC.mm10.knownGene")
 
 #     assert isinstance(txdb, TxDb)
 #     assert txdb.dbpath == mock_db_file
