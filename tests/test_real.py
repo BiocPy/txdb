@@ -1,5 +1,3 @@
-import pytest
-
 from txdb import TxDb, TxDbRegistry
 
 __author__ = "Jayaram Kancherla"

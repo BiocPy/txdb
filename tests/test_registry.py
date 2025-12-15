@@ -1,10 +1,8 @@
 import sqlite3
-from unittest.mock import MagicMock, patch
 
 import pytest
-from genomicranges import SeqInfo
 
-from txdb import TxDb, TxDbRegistry
+from txdb import TxDbRegistry
 
 __author__ = "Jayaram Kancherla"
 __copyright__ = "Jayaram Kancherla"

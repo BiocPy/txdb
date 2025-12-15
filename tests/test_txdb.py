@@ -1,4 +1,3 @@
-import pytest
 from biocframe import BiocFrame
 from genomicranges import GenomicRanges
 from iranges import IRanges

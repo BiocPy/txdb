@@ -7,7 +7,6 @@ Read more about conftest.py under:
 - https://docs.pytest.org/en/stable/writing_plugins.html
 """
 
-import os
 import sqlite3
 
 import pytest
