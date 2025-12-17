@@ -108,7 +108,7 @@ class TxDbRegistry:
 
         abs_path = self._get_absolute_path(path)
 
-        # Validation: Check if file exists and is not empty
+        # Check if file is empty
         if not os.path.exists(abs_path) or os.path.getsize(abs_path) == 0:
             try:
                 self._bfc.remove(key)
@@ -124,7 +124,8 @@ class TxDbRegistry:
     def load_db(self, txdb_id: str, force: bool = False) -> TxDb:
         """Load a TxDb object for the given ID.
 
-        This will download the file if it is not already cached.
+        If the resource is already downloaded and valid, it returns the local copy
+        immediately (unless force=True).
 
         Args:
             txdb_id:
@@ -136,6 +137,11 @@ class TxDbRegistry:
         Returns:
             An initialized TxDb object connected to the cached database.
         """
+        if not force and self.exists_locally(txdb_id):
+            path = self.local_path(txdb_id)
+            if path:
+                return TxDb(path)
+
         path = self.download(txdb_id, force=force)
         return TxDb(path)
 
@@ -147,7 +153,8 @@ class TxDbRegistry:
             return False
 
         path = self._resource_path(resource)
-        return bool(path and os.path.exists(path) and os.path.getsize(path) > 0)
+        abs_path = self._get_absolute_path(path)
+        return bool(abs_path and os.path.exists(abs_path) and os.path.getsize(abs_path) > 0)
 
     def local_path(self, txdb_id: str) -> Optional[str]:
         """Return local path if cached, else None."""
@@ -157,10 +164,11 @@ class TxDbRegistry:
             return None
 
         path = self._resource_path(resource)
-        if not path or not os.path.exists(path) or os.path.getsize(path) == 0:
+        abs_path = self._get_absolute_path(path)
+        if not abs_path or not os.path.exists(abs_path) or os.path.getsize(abs_path) == 0:
             return None
 
-        return str(path)
+        return str(abs_path)
 
     def _resource_path(self, resource: Any) -> Optional[str]:
         """Helper to extract path from a BiocFileCache resource object."""
