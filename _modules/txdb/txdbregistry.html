@@ -4,10 +4,10 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../genindex.html"><link rel="search" title="Search" href="../../search.html">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.09.25 -->
-        <title>txdb.txdbregistry - txdb 0.0.3 documentation</title>
+    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+        <title>txdb.txdbregistry - txdb 0.0.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=580074bf" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=8dab3a3b" />
     
@@ -161,7 +161,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../index.html"><div class="brand">txdb 0.0.3 documentation</div></a>
+      <a href="../../index.html"><div class="brand">txdb 0.0.4 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -182,7 +182,7 @@
       
       <div class="sidebar-sticky"><a class="sidebar-brand" href="../../index.html">
   
-  <span class="sidebar-brand-text">txdb 0.0.3 documentation</span>
+  <span class="sidebar-brand-text">txdb 0.0.4 documentation</span>
   
 </a><form class="sidebar-search-container" method="get" action="../../search.html" role="search">
   <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
@@ -234,12 +234,13 @@
         <article role="main" id="furo-main-content">
           <h1>Source code for txdb.txdbregistry</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sqlite3</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">pybiocfilecache</span><span class="w"> </span><span class="kn">import</span> <span class="n">BiocFileCache</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">._ahub</span><span class="w"> </span><span class="kn">import</span> <span class="n">TXDB_CONFIG</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._ahub</span><span class="w"> </span><span class="kn">import</span> <span class="n">AHUB_METADATA_URL</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.record</span><span class="w"> </span><span class="kn">import</span> <span class="n">TxDbRecord</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.txdb</span><span class="w"> </span><span class="kn">import</span> <span class="n">TxDb</span>
 
@@ -251,35 +252,101 @@
 <div class="viewcode-block" id="TxDbRegistry">
 <a class="viewcode-back" href="../../api/txdb.html#txdb.txdbregistry.TxDbRegistry">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">TxDbRegistry</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Registry for TxDb resources backed by TXDB_CONFIG and a BiocFileCache.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Registry for TxDb resources, populated from AnnotationHub.&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="TxDbRegistry.__init__">
 <a class="viewcode-back" href="../../api/txdb.html#txdb.txdbregistry.TxDbRegistry.__init__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="n">TXDB_CONFIG</span><span class="p">,</span>
         <span class="n">cache_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">force</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the TxDB registry.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            config:</span>
-<span class="sd">                TXDB_CONFIG-style mapping:</span>
-<span class="sd">                    txdb_id -&gt; {&quot;release_date&quot;: &quot;YYYY-MM-DD&quot;, &quot;url&quot;: &quot;...&quot;}</span>
-
 <span class="sd">            cache_dir:</span>
 <span class="sd">                Directory for the BiocFileCache database and cached files.</span>
 <span class="sd">                If None, defaults to &quot;~/.cache/txdb_bfc&quot;.</span>
+
+<span class="sd">            force:</span>
+<span class="sd">                If True, force re-download of the AnnotationHub metadata database.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">cache_dir</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">cache_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="o">.</span><span class="n">home</span><span class="p">()</span> <span class="o">/</span> <span class="s2">&quot;.cache&quot;</span> <span class="o">/</span> <span class="s2">&quot;txdb_bfc&quot;</span>
 
-        <span class="n">cache_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">cache_dir</span><span class="p">)</span>
-        <span class="n">cache_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cache_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">cache_dir</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cache_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bfc</span> <span class="o">=</span> <span class="n">BiocFileCache</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cache_dir</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_bfc</span> <span class="o">=</span> <span class="n">BiocFileCache</span><span class="p">(</span><span class="n">cache_dir</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_config</span> <span class="o">=</span> <span class="n">config</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_registry_map</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">TxDbRecord</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">_initialize_registry</span><span class="p">(</span><span class="n">force</span><span class="o">=</span><span class="n">force</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_initialize_registry</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">force</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fetch the AnnotationHub metadata and populate the registry.&quot;&quot;&quot;</span>
+        <span class="n">rname</span> <span class="o">=</span> <span class="s2">&quot;annotationhub_metadata&quot;</span>
+
+        <span class="n">existing</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">existing</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bfc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">rname</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+        <span class="k">if</span> <span class="n">force</span> <span class="ow">and</span> <span class="n">existing</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_bfc</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">rname</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="k">pass</span>
+            <span class="n">existing</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">existing</span><span class="p">:</span>
+            <span class="n">md_resource</span> <span class="o">=</span> <span class="n">existing</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">md_resource</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bfc</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">rname</span><span class="p">,</span> <span class="n">AHUB_METADATA_URL</span><span class="p">,</span> <span class="n">rtype</span><span class="o">=</span><span class="s2">&quot;web&quot;</span><span class="p">)</span>
+
+        <span class="n">md_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_filepath</span><span class="p">(</span><span class="n">md_resource</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">md_path</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">md_path</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">existing</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">force</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_initialize_registry</span><span class="p">(</span><span class="n">force</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Failed to retrieve AnnotationHub metadata database.&quot;</span><span class="p">)</span>
+
+        <span class="n">conn</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">md_path</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">            SELECT</span>
+<span class="s2">                r.title,</span>
+<span class="s2">                r.rdatadateadded,</span>
+<span class="s2">                lp.location_prefix || rp.rdatapath AS full_rdatapath</span>
+<span class="s2">            FROM resources r</span>
+<span class="s2">            LEFT JOIN location_prefixes lp</span>
+<span class="s2">                ON r.location_prefix_id = lp.id</span>
+<span class="s2">            LEFT JOIN rdatapaths rp</span>
+<span class="s2">                ON rp.resource_id = r.id</span>
+<span class="s2">            WHERE r.title LIKE &#39;TxDb%.sqlite&#39;</span>
+<span class="s2">            ORDER BY r.rdatadateadded DESC;</span>
+<span class="s2">            &quot;&quot;&quot;</span>
+            <span class="n">cursor</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+            <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+            <span class="n">rows</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">conn</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">title</span><span class="p">,</span> <span class="n">date_added</span><span class="p">,</span> <span class="n">url</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">title</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.sqlite&quot;</span><span class="p">):</span>
+                <span class="n">txdb_id</span> <span class="o">=</span> <span class="n">title</span><span class="p">[:</span><span class="o">-</span><span class="mi">7</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">txdb_id</span> <span class="o">=</span> <span class="n">title</span>
+
+            <span class="k">if</span> <span class="n">txdb_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_registry_map</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="n">entry</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="n">url</span><span class="p">,</span> <span class="s2">&quot;release_date&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">date_added</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">date_added</span> <span class="k">else</span> <span class="kc">None</span><span class="p">}</span>
+
+            <span class="n">record</span> <span class="o">=</span> <span class="n">TxDbRecord</span><span class="o">.</span><span class="n">from_config_entry</span><span class="p">(</span><span class="n">txdb_id</span><span class="p">,</span> <span class="n">entry</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_registry_map</span><span class="p">[</span><span class="n">txdb_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">record</span>
 
 <div class="viewcode-block" id="TxDbRegistry.list_txdb">
 <a class="viewcode-back" href="../../api/txdb.html#txdb.txdbregistry.TxDbRegistry.list_txdb">[docs]</a>
@@ -289,7 +356,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            A list of valid TxDb ID strings.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span></div>
+        <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_registry_map</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span></div>
 
 
 <div class="viewcode-block" id="TxDbRegistry.get_record">
@@ -307,15 +374,11 @@
 <span class="sd">        Raises:</span>
 <span class="sd">            KeyError: If the ID is not found in the configuration.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">txdb_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">txdb_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_registry_map</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;TxDb ID &#39;</span><span class="si">{</span><span class="n">txdb_id</span><span class="si">}</span><span class="s2">&#39; not found in registry.&quot;</span><span class="p">)</span>
 
-        <span class="n">entry</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="p">[</span><span class="n">txdb_id</span><span class="p">]</span>
-        <span class="k">return</span> <span class="n">TxDbRecord</span><span class="o">.</span><span class="n">from_config_entry</span><span class="p">(</span><span class="n">txdb_id</span><span class="p">,</span> <span class="n">entry</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_registry_map</span><span class="p">[</span><span class="n">txdb_id</span><span class="p">]</span></div>
 
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">_get_absolute_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_bfc</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">cache_dir</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">&quot;</span>
 
 <div class="viewcode-block" id="TxDbRegistry.download">
 <a class="viewcode-back" href="../../api/txdb.html#txdb.txdbregistry.TxDbRegistry.download">[docs]</a>
@@ -350,24 +413,16 @@
             <span class="n">download</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="p">)</span>
 
-        <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resource_path</span><span class="p">(</span><span class="n">resource</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Could not resolve local path for resource </span><span class="si">{</span><span class="n">key</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_filepath</span><span class="p">(</span><span class="n">resource</span><span class="p">)</span>
 
-        <span class="n">abs_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_absolute_path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-
-        <span class="c1"># Check if file is empty</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">abs_path</span><span class="p">)</span> <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getsize</span><span class="p">(</span><span class="n">abs_path</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">path</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getsize</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_bfc</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
                 <span class="k">pass</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Download failed for </span><span class="si">{</span><span class="n">txdb_id</span><span class="si">}</span><span class="s2">: File at </span><span class="si">{</span><span class="n">abs_path</span><span class="si">}</span><span class="s2"> is empty or missing. &quot;</span>
-                <span class="s2">&quot;Please check your internet connection or the resource URL.&quot;</span>
-            <span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Download failed for </span><span class="si">{</span><span class="n">txdb_id</span><span class="si">}</span><span class="s2">. File is empty or missing.&quot;</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">abs_path</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">path</span></div>
 
 
 <div class="viewcode-block" id="TxDbRegistry.load_db">
@@ -388,52 +443,20 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            An initialized TxDb object connected to the cached database.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">force</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">exists_locally</span><span class="p">(</span><span class="n">txdb_id</span><span class="p">):</span>
-            <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">local_path</span><span class="p">(</span><span class="n">txdb_id</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">path</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">TxDb</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-
         <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="n">txdb_id</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="n">force</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">TxDb</span><span class="p">(</span><span class="n">path</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="TxDbRegistry.exists_locally">
-<a class="viewcode-back" href="../../api/txdb.html#txdb.txdbregistry.TxDbRegistry.exists_locally">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">exists_locally</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">txdb_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if the file for a given TxDb ID is already present in the cache.&quot;&quot;&quot;</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">resource</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bfc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">txdb_id</span><span class="p">)</span>
-        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">False</span>
-
-        <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resource_path</span><span class="p">(</span><span class="n">resource</span><span class="p">)</span>
-        <span class="n">abs_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_absolute_path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-        <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="n">abs_path</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">abs_path</span><span class="p">)</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getsize</span><span class="p">(</span><span class="n">abs_path</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="TxDbRegistry.local_path">
-<a class="viewcode-back" href="../../api/txdb.html#txdb.txdbregistry.TxDbRegistry.local_path">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">local_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">txdb_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return local path if cached, else None.&quot;&quot;&quot;</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">resource</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bfc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">txdb_id</span><span class="p">)</span>
-        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">None</span>
-
-        <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resource_path</span><span class="p">(</span><span class="n">resource</span><span class="p">)</span>
-        <span class="n">abs_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_absolute_path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">abs_path</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">abs_path</span><span class="p">)</span> <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getsize</span><span class="p">(</span><span class="n">abs_path</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">None</span>
-
-        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">abs_path</span><span class="p">)</span></div>
-
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">_resource_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resource</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Helper to extract path from a BiocFileCache resource object.&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_filepath</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resource</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Helper to extract absolute path from a BiocFileCache resource.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">resource</span><span class="p">,</span> <span class="s2">&quot;rpath&quot;</span><span class="p">):</span>
-            <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">resource</span><span class="o">.</span><span class="n">rpath</span><span class="p">)</span>
+            <span class="n">rel_path</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">resource</span><span class="o">.</span><span class="n">rpath</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">resource</span><span class="p">,</span> <span class="s2">&quot;get&quot;</span><span class="p">):</span>
+            <span class="n">rel_path</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">resource</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;rpath&quot;</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
 
-        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">resource</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;rpath&quot;</span><span class="p">))</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">resource</span><span class="p">,</span> <span class="s2">&quot;get&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span></div>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cache_dir</span> <span class="o">/</span> <span class="n">rel_path</span><span class="p">)</span></div>
 
 </pre></div>
         </article>
@@ -467,7 +490,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=47de8214"></script>
+</div><script src="../../_static/documentation_options.js?v=8c5712d9"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>
