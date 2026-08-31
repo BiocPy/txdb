@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import date, datetime
-from typing import Optional
 
 __author__ = "Jayaram Kancherla"
 __copyright__ = "Jayaram Kancherla"
@@ -14,18 +13,18 @@ class TxDbRecord:
     """Container for a single TxDb entry."""
 
     txdb_id: str
-    release_date: Optional[date]
+    release_date: date | None
     url: str
 
-    organism: Optional[str] = None  # e.g. "Hsapiens"
-    source: Optional[str] = None  # e.g. "UCSC", "BioMart"
-    build: Optional[str] = None  # e.g. "hg38.knownGene"
+    organism: str | None = None  # e.g. "Hsapiens"
+    source: str | None = None  # e.g. "UCSC", "BioMart"
+    build: str | None = None  # e.g. "hg38.knownGene"
 
     # Parsed from URL path (e.g. .../3.22/TxDb...)
-    bioc_version: Optional[str] = None
+    bioc_version: str | None = None
 
     @classmethod
-    def from_config_entry(cls, txdb_id: str, entry: dict) -> "TxDbRecord":
+    def from_config_entry(cls, txdb_id: str, entry: dict) -> TxDbRecord:
         """Build a record from a TXDB_CONFIG entry:
         {
             "release_date": "YYYY-MM-DD",  # optional
@@ -35,7 +34,7 @@ class TxDbRecord:
         url = entry["url"]
 
         date_str = entry.get("release_date")
-        rel_date: Optional[date]
+        rel_date: date | None
         if date_str:
             rel_date = datetime.strptime(date_str, "%Y-%m-%d").date()
         else:
@@ -62,10 +61,8 @@ def _parse_txdb_id(txdb_id: str):
     into (organism, source, build).
     """
     name = txdb_id
-    if name.startswith("TxDb."):
-        name = name[len("TxDb.") :]
-    if name.endswith(".sqlite"):
-        name = name[: -len(".sqlite")]
+    name = name.removeprefix("TxDb.")
+    name = name.removesuffix(".sqlite")
 
     parts = name.split(".")
     if len(parts) < 2:
@@ -77,7 +74,7 @@ def _parse_txdb_id(txdb_id: str):
     return organism, source, build
 
 
-def _parse_bioc_version(url: str) -> Optional[str]:
+def _parse_bioc_version(url: str) -> str | None:
     """Extract the Bioconductor/AnnotationHub-like version from URL.
 
     Example:
