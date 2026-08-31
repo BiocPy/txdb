@@ -1,7 +1,7 @@
 import os
 import sqlite3
 from pathlib import Path
-from typing import Any, Dict, Optional, Union
+from typing import Any
 
 from pybiocfilecache import BiocFileCache
 
@@ -19,7 +19,7 @@ class TxDbRegistry:
 
     def __init__(
         self,
-        cache_dir: Optional[Union[str, Path]] = None,
+        cache_dir: str | Path | None = None,
         force: bool = False,
     ) -> None:
         """Initialize the TxDB registry.
@@ -39,7 +39,7 @@ class TxDbRegistry:
         self._cache_dir.mkdir(parents=True, exist_ok=True)
         self._bfc = BiocFileCache(self._cache_dir)
 
-        self._registry_map: Dict[str, TxDbRecord] = {}
+        self._registry_map: dict[str, TxDbRecord] = {}
 
         self._initialize_registry(force=force)
 
@@ -195,7 +195,7 @@ class TxDbRegistry:
         path = self.download(txdb_id, force=force)
         return TxDb(path)
 
-    def _get_filepath(self, resource: Any) -> Optional[str]:
+    def _get_filepath(self, resource: Any) -> str | None:
         """Helper to extract absolute path from a BiocFileCache resource."""
         if hasattr(resource, "rpath"):
             rel_path = str(resource.rpath)
