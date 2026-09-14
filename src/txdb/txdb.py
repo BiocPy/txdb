@@ -1,5 +1,4 @@
 import sqlite3
-from typing import List, Optional
 
 from biocframe import BiocFrame
 from genomicranges import GenomicRanges, SeqInfo
@@ -95,8 +94,8 @@ class TxDb:
         self,
         table: str,
         prefix: str,
-        columns: Optional[List[str]] = None,
-        filter: Optional[dict] = None,
+        columns: list[str] | None = None,
+        filter: dict | None = None,
     ) -> GenomicRanges:
         """Internal helper to fetch a table and convert to GenomicRanges.
 
@@ -165,7 +164,7 @@ class TxDb:
             seqinfo=self.seqinfo,
         )
 
-    def transcripts(self, filter: Optional[dict] = None) -> GenomicRanges:
+    def transcripts(self, filter: dict | None = None) -> GenomicRanges:
         """Retrieve transcripts as a GenomicRanges object.
 
         Args:
@@ -177,7 +176,7 @@ class TxDb:
         """
         return self._fetch_as_gr("transcript", "tx", filter=filter)
 
-    def exons(self, filter: Optional[dict] = None) -> GenomicRanges:
+    def exons(self, filter: dict | None = None) -> GenomicRanges:
         """Retrieve exons as a GenomicRanges object.
 
         Args:
@@ -189,7 +188,7 @@ class TxDb:
         """
         return self._fetch_as_gr("exon", "exon", filter=filter)
 
-    def cds(self, filter: Optional[dict] = None) -> GenomicRanges:
+    def cds(self, filter: dict | None = None) -> GenomicRanges:
         """Retrieve coding sequences (CDS) as a GenomicRanges object.
 
         Args:
