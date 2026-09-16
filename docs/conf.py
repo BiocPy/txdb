@@ -117,9 +117,10 @@ copyright = "2025, Jayaram Kancherla"
 # If you don’t need the separation provided between version and release,
 # just set them both to the same value.
 try:
-    from txdb import __version__ as version
-except ImportError:
-    version = ""
+    from importlib.metadata import version as get_version
+    version = get_version("txdb")
+except Exception:
+    version = "unknown"
 
 if not version or version.lower() == "unknown":
     version = os.getenv("READTHEDOCS_VERSION", "unknown")  # automatically set by RTD
@@ -177,8 +178,17 @@ html_theme = "alabaster"
 # further.  For a list of options available for each theme, see the
 # documentation.
 html_theme_options = {
-    "sidebar_width": "300px",
-    "page_width": "1200px"
+    "light_css_variables": {
+        "color-brand-primary": "#0052cc",
+        "color-brand-content": "#0052cc",
+    },
+    "dark_css_variables": {
+        "color-brand-primary": "#4c9aff",
+        "color-brand-content": "#4c9aff",
+    },
+    "source_repository": "https://github.com/biocpy/txdb",
+    "source_branch": "main",
+    "source_directory": "docs/",
 }
 
 # Add any paths that contain custom themes here, relative to this directory.
@@ -298,7 +308,6 @@ intersphinx_mapping = {
     "pandas": ("https://pandas.pydata.org/pandas-docs/stable", None),
     "scipy": ("https://docs.scipy.org/doc/scipy/reference", None),
     "setuptools": ("https://setuptools.pypa.io/en/stable/", None),
-    "pyscaffold": ("https://pyscaffold.org/en/stable", None),
 }
 
 print(f"loading configurations for {project} {version} ...", file=sys.stderr)

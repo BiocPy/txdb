@@ -19,4 +19,4 @@ from .record import TxDbRecord
 from .txdb import TxDb
 from .txdbregistry import TxDbRegistry
 
-__all__ = ["TxDb", "TxDbRegistry", "TxDbRecord"]
+__all__ = ["TxDb", "TxDbRecord", "TxDbRegistry"]
