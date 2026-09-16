@@ -25,7 +25,7 @@ class TxDbRecord:
     bioc_version: Optional[str] = None
 
     @classmethod
-    def from_config_entry(cls, txdb_id: str, entry: dict) -> "TxDbRecord":
+    def from_config_entry(cls, txdb_id: str, entry: dict) -> TxDbRecord:
         """Build a record from a TXDB_CONFIG entry:
         {
             "release_date": "YYYY-MM-DD",  # optional
@@ -62,10 +62,8 @@ def _parse_txdb_id(txdb_id: str):
     into (organism, source, build).
     """
     name = txdb_id
-    if name.startswith("TxDb."):
-        name = name[len("TxDb.") :]
-    if name.endswith(".sqlite"):
-        name = name[: -len(".sqlite")]
+    name = name.removeprefix("TxDb.")
+    name = name.removesuffix(".sqlite")
 
     parts = name.split(".")
     if len(parts) < 2:
