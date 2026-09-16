@@ -1,25 +1,111 @@
-[build-system]
-# AVOID CHANGING REQUIRES: IT WILL BE UPDATED BY PYSCAFFOLD!
-requires = ["setuptools>=46.1.0", "setuptools_scm[toml]>=5"]
-build-backend = "setuptools.build_meta"
+[project]
+name = "txdb"
+dynamic = [
+    "version",
+]
+description = "Python interface to access and manipulate genome annotations in TxDB SQLite format."
+readme = "README.md"
+authors = [
+    { name = "Jayaram Kancherla", email = "jayaram.kancherla@gmail.com" },
+]
+requires-python = ">=3.9"
+keywords = [
+    "bioinformatics",
+    "computational biology",
+    "genome annotations",
+    "genomic features",
+    "bioconductor",
+    "biocpy",
+    "txdb",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+    "Typing :: Typed",
+]
+dependencies = [
+    "biocframe,
+    "genomicranges",
+    "pybiocfilecache",
+]
 
-[tool.setuptools_scm]
-# For smarter version schemes and other configuration options,
-# check out https://github.com/pypa/setuptools_scm
-version_scheme = "no-guess-dev"
+
+[project.license]
+file = "LICENSE.txt"
+
+
+[project.urls]
+Homepage = "https://github.com/BiocPy/txdb"
+Documentation = "https://biocpy.github.io/txdb/"
+Source = "https://github.com/BiocPy/txdb"
+"Bug Tracker" = "https://github.com/BiocPy/txdb/issues"
+
+[project.optional-dependencies]
+testing = [
+    "pytest",
+    "pytest-cov",
+]
+
+[build-system]
+requires = [
+    "hatchling",
+    "hatch-vcs",
+]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "vcs"
+fallback-version = "0.1.0"
 
 [tool.ruff]
 line-length = 120
-src = ["src"]
-# exclude = ["tests"]
-lint.extend-ignore = ["F821"]
+src = [
+    "src",
+]
+exclude = [
+    "tests",
+    "docs",
+]
+
+[tool.ruff.lint]
+extend-ignore = [
+    "F821",
+]
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = [
+    "E402",
+    "F401",
+]
 
 [tool.ruff.format]
 docstring-code-format = true
 docstring-code-line-length = 20
 
-[tool.ruff.lint.per-file-ignores]
-"__init__.py" = ["E402", "F401"]
+[tool.mypy]
+strict = true
+
+[tool.pytest.ini_options]
+addopts = "--cov --cov-report term-missing"
+testpaths = [
+    "tests",
+]
+
+[tool.bandit]
+exclude_dirs = ["tests"]
+skips = ["B110"]
